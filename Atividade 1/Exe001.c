@@ -22,18 +22,41 @@ int main() {
     srand(time(NULL));
 
     int *vetor = NULL;
-    int i, busca, soma = 0, quantidade = 0;
-    double inicio, fim;
+    int i, busca, num_threads, quantidade = 0;
+    double inicioSequencial, fimSequencial, inicioParalelo, fimParalelo, tempoSequencial, tempoParalelo;
 
     vetor = gerar_vetor_inteiro(TAMANHO);
 
     printf("Digite o número para buscar: ");
     scanf("%d", &busca);
 
-    inicio = omp_get_wtime();
+
+    //Execução sequencial
+
+    inicioSequencial = omp_get_wtime();
+
+    for(i = 0; i < TAMANHO; i++){
+
+        if(vetor[i] == busca)
+            quantidade++;
+
+    }
+
+    fimSequencial = omp_get_wtime();
+
+    tempoSequencial = fimSequencial - inicioSequencial;
+
+
+    //Execução paralela
+
+    quantidade = 0;
+
+    inicioParalelo = omp_get_wtime();
 
     #pragma omp parallel num_threads(4)
     {
+
+        num_threads = omp_get_num_threads();
 
         #pragma omp for reduction(+: quantidade)
 
@@ -46,10 +69,17 @@ int main() {
 
     }
 
-    fim = omp_get_wtime();
+    fimParalelo = omp_get_wtime();
+
+    tempoParalelo = fimParalelo - inicioParalelo;
+
+    //Saída
 
     printf("O número %d foi encontrado %d vezes no vetor.\n", busca, quantidade);
-    printf("Tempo de execução: %.2f segundos.\n\n", fim - inicio);
+    printf("Tempo de execução sequencial: %.2f segundos.\n", tempoSequencial);
+    printf("Tempo de execução paralelo com %d threads: %.2f segundos.\n", num_threads, tempoParalelo);
+    printf("Speed Up: %.2f.\n", tempoSequencial / tempoParalelo);
+    printf("Eficiência: %.2f.\n\n", (tempoSequencial / tempoParalelo) / num_threads);
     
     /*
     FIM

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <locale.h>
 #include <omp.h>
 
 static long num_steps = 100000000;
@@ -6,7 +7,9 @@ double step;
 
 int main(){
 
-    int i, num_threads;
+    setlocale(LC_ALL, "Portuguese");
+
+    int i, num_threads, nprocs = omp_get_num_procs() / 2;
     double x, pi, sum = 0;
     double inicio, fim, tempoSequencial, tempoParalelo;
 
@@ -14,7 +17,7 @@ int main(){
 
     inicio = omp_get_wtime();
 
-    #pragma omp parallel private(x) num_threads(4)
+    #pragma omp parallel private(x) num_threads(nprocs)
     {
 
         num_threads = omp_get_num_threads();
@@ -49,7 +52,7 @@ int main(){
 
     pi = step * sum;
 
-    printf("%.10f\n", pi);
+    printf("Aproximação de pi: %.10f\n", pi);
     printf("Tempo de execução sequencial: %f.\n", tempoSequencial);
     printf("Tempo de execução paralela com %d threads: %f.\n", num_threads, tempoParalelo);
     printf("Speed Up: %f.\n", tempoSequencial / tempoParalelo);
